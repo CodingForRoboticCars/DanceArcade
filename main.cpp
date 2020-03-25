@@ -1,7 +1,7 @@
 // main.cpp
 // Runs on LM4F120/TM4C123
-// Jonathan Valvano and Daniel Valvano
-// This is a starter project for the EE319K Lab 10 in C++
+// Thank you to Jonathan Valvano and Daniel Valvano for code on reading an SD card
+// This is Viraj Wadhwa's Dance Arcade game main.cpp file
 
 // Last Modified: 4/19/2018 
 // http://www.spaceinvaders.de/
