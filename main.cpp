@@ -1299,6 +1299,13 @@ int main(void){
 	
 	uint32_t temp = 0;
 	//	red, green, blue
+	
+	/*
+	This part is very sequential. We are all set up and good to go,
+	but we need to give the player a few seconds to get ready. So
+	we just draw '3.. 2.. 1' on the screen with delay so the gameplay
+	isn't so sudden.
+	*/
 	ST7735_DrawCharS(30, 60, '3', ST7735_Color565(255, 0, 0), 1, 12);
 	Delay1ms(1000);
 	ST7735_DrawCharS(30, 60, '3', ST7735_Color565(0, 0, 0), 1, 12);
@@ -1351,7 +1358,7 @@ int main(void){
 							ST7735_InvertDisplay(0);
 						}
 					
-						if(rotation_count == 90) {	// this should be rotation_count == 180
+						if(rotation_count == 90) {	
 							ST7735_SetRotation(0);
 							rotation_flag = 0;
 							ST7735_FillScreen(0);
@@ -1364,6 +1371,10 @@ int main(void){
 									Fresult = f_read(&Handle, &buffer2, buffer_size, &successfulreads);
 									buffer2_flag[0] = 0;
 								}
+								/*
+								Here is the code block for our invert game mode! Happens
+								during a normal game, the colors will invert (with warning)!
+								*/
 								
 								color_for_invert++;
 								if(color_for_invert == 14) {
@@ -1679,11 +1690,7 @@ int main(void){
 	
 		if((smallest <= 29 && smallest >= 23) && (which_array_holds_smallest == 0) && (!(GPIO_PORTF_DATA_R & left_button)) && (!left_flag)) {
 			farthest_flag = 1;
-			/*
-			if(num_arrows != 0) {
-				num_arrows--;
-			}
-			*/
+		
 			if(smallest == 29 || smallest == 23) 
 				ok++;
 			else if(smallest == 28 || smallest == 24)
@@ -2001,20 +2008,16 @@ int main(void){
 		farthest_flag = 0;
 	}
 			
-			/*
-			invert_timer++;
-			if(invert_timer > 5) {
-				invert_flag = 0;
-				i = 159;
-				invert_first_time = 0;
-				invert_timer = 0;
-				timer++;
-			}
-			*/
 		}
 	}	// while(end_flag) ends here
 
 	ST7735_FillScreen(0x0000);	// set screen to black
+	
+	/*
+	Their game is done! Let's close the file we are reading from, and
+	open a file full of music values to play an "angel from heaven" tune.
+	We will also display the player's results.
+	*/
 	
 	Fresult = f_close(&Handle);
 	ST7735_FillScreen(0x0000);	// set screen to black
@@ -2030,6 +2033,9 @@ int main(void){
 	index = 0;
 	end_flag = 0;
 
+	/*
+	Begin to calculate the player's results. And this we will draw onto the screen
+	*/
 	uint8_t color_flag;
 	uint8_t red, green, blue;
 	red = 255;
@@ -2152,7 +2158,10 @@ int main(void){
 					}
 				}
 	// red, green, blue
-	
+	/* We can alternate the colors of the 'perfect' symbol on the screen
+	to make it stand out compared to the other metrics, it gives a beautiful
+	and changing rainbow like appearance!
+	*/
 	ST7735_DrawCharS(4, 80, 'P', ST7735_Color565(red, green, blue), 1, 1);
 	ST7735_DrawCharS(13, 80, 'E', ST7735_Color565(blue, red, green), 1, 1);
 	ST7735_DrawCharS(22, 80, 'R', ST7735_Color565(green, blue, red), 1, 1);
@@ -2315,6 +2324,5 @@ int main(void){
 }
 	
 	ST7735_FillScreen(0x0000);	// set screen to black
-	//Timer3_Init(888889);	// 888889
-	
+	// That's all folks!
 }
