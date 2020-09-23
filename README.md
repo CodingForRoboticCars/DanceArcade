@@ -13,5 +13,5 @@ sampled at 44.1 kHz, and outputted through a resistor ladder I made, to a 3.5 mm
 All the sprites have been self created with paint, and all the graphical images I used in the game are all non-copyrighted!
 I am making this game for educational/project purposes only, no selling or commercial listings allowed. 
 
-If you would like to make this a playable game for yourself, please reach out to me via my linkedin at https://www.linkedin.com/in/virajwadhwa/ and I can help you setup what
+If you would like to make this a playable game for yourself, please reach out to me via my linkedin at https://www.linkedin.com/in/virajwadhwa/ and I can help you setup
 the hardware you need to play this game!
