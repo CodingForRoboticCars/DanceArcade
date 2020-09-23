@@ -3,11 +3,7 @@
 // Thank you to Jonathan Valvano and Daniel Valvano for code on reading an SD card
 // This is Viraj Wadhwa's Dance Arcade game main.cpp file
 
-// Last Modified: 4/19/2018 
-// http://www.spaceinvaders.de/
-// sounds at http://www.classicgaming.cc/classics/spaceinvaders/sounds.php
-// http://www.classicgaming.cc/classics/spaceinvaders/playguide.php
-/* This example accompanies the books
+/* 
    "Embedded Systems: Real Time Interfacing to Arm Cortex M Microcontrollers",
    ISBN: 978-1463590154, Jonathan Valvano, copyright (c) 2017
 
@@ -60,8 +56,6 @@
 #include "ff.h"
 #include "stdio.h"
 #include "stdlib.h"
-
-//SlidePot my(1500,0);
 
 extern "C" void DisableInterrupts(void);
 extern "C" void EnableInterrupts(void);
@@ -168,10 +162,8 @@ int16_t smallest;
 uint8_t which_array_holds_smallest;
 uint8_t index_of_smallest;
 
-
 uint32_t static count_down;
 //extern const unsigned short down_arrow_0[], down_arrow_1[], down_arrow_2[];
-
 
 uint8_t cc;
 const char inFilename[] = "otr.txt";   // 8 characters or fewer test.txt
@@ -182,9 +174,9 @@ const char inFilename[] = "otr.txt";   // 8 characters or fewer test.txt
 //static int8_t menu_button_index;
 //static uint8_t menu_button_switch;
 
-	//FRESULT MountFresult;
-	static FATFS g_sFatFs;
-  FRESULT MountFresult = f_mount(&g_sFatFs, "", 0);
+//FRESULT MountFresult;
+static FATFS g_sFatFs;
+FRESULT MountFresult = f_mount(&g_sFatFs, "", 0);
 	
 FIL Handle,Handle2;
 
@@ -194,40 +186,17 @@ FRESULT Fresult;
 UINT successfulreads = 1;
 
 int main(void){
-  PLL_Init(Bus80MHz);       // Bus clock is 80 MHz 
-  Random_Init(1);
+  	PLL_Init(Bus80MHz);       // Bus clock is 80 MHz 
+  	Random_Init(1);
 	ST7735_InitR(INITR_REDTAB);
-  ST7735_FillScreen(0);                 // set screen to black
-  //Output_Init();
-  //Timer0_Init(&background,1600000); // 50 Hz
-  //Timer1_Init(&clock,80000000); // 1 Hz
+  	ST7735_FillScreen(0);                 // set screen to black
+  	//Output_Init();
+  	//Timer0_Init(&background,1600000); // 50 Hz
+  	//Timer1_Init(&clock,80000000); // 1 Hz
 	EnableInterrupts();
 	Sound_Init();	
 	enablebuttons();
 	ST7735_SetTextColor(ST7735_WHITE);
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	ST7735_DrawBitmap(0,159, dance_bmp, 128, 160);	// 128, 160	// ddr_menu_background
 	
@@ -251,6 +220,7 @@ int main(void){
 		buffer_flag[0] = 1;
 		buffer2_flag[0] = 1;
 		
+	// READING VALUES INTO THE BUFFERS
 	while((GPIO_PORTF_DATA_R & 0x01) && (GPIO_PORTF_DATA_R & 0x02) && (GPIO_PORTF_DATA_R & 0x04) && (GPIO_PORTF_DATA_R & 0x08)) {
 				if(buffer_flag[0] == 1) {
 						Fresult = f_read(&Handle, &buffer, buffer_size, &successfulreads);
@@ -272,7 +242,7 @@ int main(void){
 	Fresult = f_close(&Handle);
 	ST7735_FillScreen(0x0000);	// set screen to black
 	
-		//MountFresult = f_mount(&g_sFatFs, "", 0);
+	//MountFresult = f_mount(&g_sFatFs, "", 0);
 	if(MountFresult){
 			while(1){};
 		}
@@ -1040,23 +1010,6 @@ int main(void){
 					ST7735_DrawFastVLine(93, y_set, height8, color);
 					
 				}
-
-			
-				/*
-				count_down++;
-				if(count_down == 45000) {
-					count_down = 0;
-				}
-				if(count_down == 30000) {
-					ST7735_DrawBitmap(66, 28, down_arrow_2, 26, 28);	// 26, 28
-				}
-				else if(count_down == 15000) {
-					ST7735_DrawBitmap(66, 28, down_arrow_1, 26, 28);	// 26, 28
-				}
-				else if(count_down == 0) {
-					ST7735_DrawBitmap(66, 28, down_arrow_0, 26, 28);
-				}
-				*/
 				
 				if(!(GPIO_PORTF_DATA_R & 0x01)) {	// they scrolled left
 					for(int i = 0; i < 100000; i++) {};	// register just one button press
@@ -1120,8 +1073,8 @@ int main(void){
 						ST7735_DrawChar(20,100, 'L', 0x079F, 0, 2);
 						ST7735_DrawChar(20+10,100, 'i', 0x079F, 0, 2);
 						ST7735_DrawChar(20+20,100, 'e', 0x079F, 0, 2);
-						ST7735_DrawChar(20+40,100, '2', 0x079F, 0, 2);		//
-						ST7735_DrawChar(20+60,100, 'Y', 0x079F, 0, 2);		//
+						ST7735_DrawChar(20+40,100, '2', 0x079F, 0, 2);		
+						ST7735_DrawChar(20+60,100, 'Y', 0x079F, 0, 2);		
 						ST7735_DrawChar(20+70,100, 'o', 0x079F, 0, 2);
 						ST7735_DrawChar(20+80,100, 'u', 0x079F, 0, 2);
 					}
@@ -1129,25 +1082,25 @@ int main(void){
 						ST7735_DrawChar(2,100, 'O', 0x079F, 0, 2);
 						ST7735_DrawChar(2+10,100, 'l', 0x079F, 0, 2);
 						ST7735_DrawChar(2+20,100, 'd', 0x079F, 0, 2);
-						ST7735_DrawChar(2+35,100, 'T', 0x079F, 0, 2); //
+						ST7735_DrawChar(2+35,100, 'T', 0x079F, 0, 2); 
 						ST7735_DrawChar(2+45,100, 'o', 0x079F, 0, 2);
 						ST7735_DrawChar(2+55,100, 'w', 0x079F, 0, 2);
 						ST7735_DrawChar(2+65,100, 'n', 0x079F, 0, 2);
-						ST7735_DrawChar(2+80,100, 'R', 0x079F, 0, 2);//
+						ST7735_DrawChar(2+80,100, 'R', 0x079F, 0, 2);
 						ST7735_DrawChar(2+90,100, 'o', 0x079F, 0, 2);
 						ST7735_DrawChar(2+100,100, 'a', 0x079F, 0, 2);
 						ST7735_DrawChar(2+110,100, 'd', 0x079F, 0, 2);
 					}
 					else if(song_number == 2) {
 						ST7735_DrawChar(2,100, '9', 0x079F, 0, 2);
-						ST7735_DrawChar(2+15,100, 'L', 0x079F, 0, 2);	//
+						ST7735_DrawChar(2+15,100, 'L', 0x079F, 0, 2);	
 						ST7735_DrawChar(2+25,100, 'a', 0x079F, 0, 2);
 						ST7735_DrawChar(2+35,100, 's', 0x079F, 0, 2); 
 						ST7735_DrawChar(2+45,100, 'h', 0x079F, 0, 2);
 						ST7735_DrawChar(2+55,100, 'e', 0x079F, 0, 2);
 						ST7735_DrawChar(2+65,100, 's', 0x079F, 0, 2);
-						ST7735_DrawChar(2+80,100, 'N', 0x079F, 0, 2);//
-						ST7735_DrawChar(2+95,100, 'B', 0x079F, 0, 2); // 
+						ST7735_DrawChar(2+80,100, 'N', 0x079F, 0, 2);
+						ST7735_DrawChar(2+95,100, 'B', 0x079F, 0, 2); 
 						ST7735_DrawChar(2+110,100, 'D', 0x079F, 0, 2);
 					}
 					else if(song_number == 3) {
@@ -1164,11 +1117,11 @@ int main(void){
 						ST7735_DrawChar(5,100, 'D', 0x079F, 0, 2);
 						ST7735_DrawChar(5+12,100, 'C', 0x079F, 0, 2);
 						ST7735_DrawChar(5+24,100, 'L', 0x079F, 0, 2);
-						ST7735_DrawChar(5+34,100, 'o', 0x079F, 0, 2); //
+						ST7735_DrawChar(5+34,100, 'o', 0x079F, 0, 2); 
 						ST7735_DrawChar(5+44,100, 'v', 0x079F, 0, 2);
 						ST7735_DrawChar(5+54,100, 'e', 0x079F, 0, 2);
 						ST7735_DrawChar(5+66,100, 'G', 0x079F, 0, 2);
-						ST7735_DrawChar(5+78,100, 'o', 0x079F, 0, 2);//
+						ST7735_DrawChar(5+78,100, 'o', 0x079F, 0, 2);
 						ST7735_DrawChar(5+90,100, 'G', 0x079F, 0, 2);
 						ST7735_DrawChar(5+102,100, 'o', 0x079F, 0, 2);
 					}
@@ -1176,22 +1129,22 @@ int main(void){
 						ST7735_DrawChar(5,100, 'W', 0x079F, 0, 2);
 						ST7735_DrawChar(5+12,100, 'o', 0x079F, 0, 2);
 						ST7735_DrawChar(5+24,100, 'r', 0x079F, 0, 2);
-						ST7735_DrawChar(5+36,100, 't', 0x079F, 0, 2); //
+						ST7735_DrawChar(5+36,100, 't', 0x079F, 0, 2); 
 						ST7735_DrawChar(5+48,100, 'h', 0x079F, 0, 2);
 						ST7735_DrawChar(5+62,100, 'a', 0x079F, 0, 2);
 						ST7735_DrawChar(5+74,100, 'T', 0x079F, 0, 2);
-						ST7735_DrawChar(5+86,100, 'r', 0x079F, 0, 2);//
+						ST7735_DrawChar(5+86,100, 'r', 0x079F, 0, 2);
 						ST7735_DrawChar(5+98,100, 'y', 0x079F, 0, 2);
 					}
 					else if(song_number == 6) {
 						ST7735_DrawChar(5,100, 'L', 0x079F, 0, 2);
 						ST7735_DrawChar(5+12,100, 'a', 0x079F, 0, 2);
 						ST7735_DrawChar(5+24,100, 'h', 0x079F, 0, 2);
-						ST7735_DrawChar(5+36,100, 'o', 0x079F, 0, 2); //
+						ST7735_DrawChar(5+36,100, 'o', 0x079F, 0, 2); 
 						ST7735_DrawChar(5+48,100, 'r', 0x079F, 0, 2);
 						ST7735_DrawChar(5+62,100, 'e', 0x079F, 0, 2);
 						ST7735_DrawChar(5+74,100, 'D', 0x079F, 0, 2);
-						ST7735_DrawChar(5+86,100, 'i', 0x079F, 0, 2);//
+						ST7735_DrawChar(5+86,100, 'i', 0x079F, 0, 2);
 						ST7735_DrawChar(5+98,100, 'A', 0x079F, 0, 2);
 					}
 					
@@ -1226,7 +1179,7 @@ int main(void){
 	Fresult = f_read(&Handle, &cc, 1, &successfulreads);
 
 	while(cc != '{') {
-			Fresult = f_read(&Handle, &cc, 1, &successfulreads);
+		Fresult = f_read(&Handle, &cc, 1, &successfulreads);
 	}
 	buffer_flag[0] = 1;
 	buffer2_flag[0] = 1;
@@ -1486,15 +1439,6 @@ int main(void){
 							}
 						}
 					}
-		
-			/*
-			else if(pixel_increment < 80 && pixel_increment > 45) {
-				num_arrows = 3;
-			}
-			else if(pixel_increment < 45) {
-				num_arrows = 4;
-			}
-			*/
 			
 			pixel_increment = -num_arrows;
 			count++;
@@ -1611,7 +1555,7 @@ int main(void){
 	// ==================================================================
 		
 		smallest = smallest + pixel_increment;	// we don't know which array the smallest value is in, but no matter what all arrows are drawn on the 
-																							// screen, so it has to move by pixel_increment
+							// screen, so it has to move by pixel_increment
 		closest_distance = closest_distance+pixel_increment;	// likewise
 	
 	if(farthest_flag) {
@@ -1758,11 +1702,7 @@ int main(void){
 		
 		else if((smallest <= 31 && smallest >= 25) && (which_array_holds_smallest == 1) && (!(GPIO_PORTF_DATA_R & up_button)) && (!up_flag)) {
 			farthest_flag = 1;
-			/*
-			if(num_arrows != 0) {
-				num_arrows--;
-			}
-			*/
+		
 			if(smallest == 31 || smallest == 25) 
 				ok++;
 			else if(smallest == 30 || smallest == 26)
@@ -1809,11 +1749,7 @@ int main(void){
 		}
 		else if((smallest <= 31 && smallest >= 25) && (which_array_holds_smallest == 2) && (!(GPIO_PORTF_DATA_R & down_button)) && (!down_flag)) {
 			farthest_flag = 1;
-			/*
-			if(num_arrows != 0) {
-				num_arrows--;
-			}
-			*/
+		
 			if(smallest == 31 || smallest == 25) 
 				ok++;
 			else if(smallest == 30 || smallest == 26)
@@ -2295,125 +2231,7 @@ int main(void){
 	
 }
 	
-	
-	
-	
-	
-	
-		
-	
-		/*
-		ST7735_FillScreen(0x0000);	// set screen to black
-		ST7735_DrawBitmap(0, 54, easy, 128, 54);
-		ST7735_DrawBitmap(0, 107, medium, 128, 53);
-		ST7735_DrawBitmap(0,160, hard, 128, 53);
-		while(1) {
-			ST7735_DrawBitmap(0, 54, easy_selected, 128, 54);
-			for(int i = 0; i < 1000000; i++);
-			ST7735_DrawBitmap(0, 54, easy, 128, 54);
-			//ST7735_DrawBitmap(0, 107, medium_selected, 128, 53);
-			ST7735_DrawFastVLine(30,30,53,0x079F);
-			ST7735_DrawFastVLine(127,160,53,0x079F);
-			ST7735_DrawFastHLine(0,160,127,0x079F);
-			ST7735_DrawFastHLine(127,160,127,0x079F); 
-			for(int i = 0; i < 1000000; i++);
-			ST7735_DrawBitmap(0,160, hard, 128, 53);
-
-			
-
-		}
-		
-		
-		//ST7735_DrawBitmap(0, 108, medium, 128, 53);	
-		//ST7735_DrawBitmap(0, 54, easy, 128, 54);	
-		static int index1;
-	
-	
-		//while(1) {};
-	
-	
-		
-		
-		/*
-		ST7735_SetCursor(0,120);
-		ST7735_OutString((char*)"Press any button to");
-		ST7735_SetCursor(0,121);
-		ST7735_OutString((char*)"			continue			");
-		*/
-	//}
 	ST7735_FillScreen(0x0000);	// set screen to black
 	//Timer3_Init(888889);	// 888889
-
-
 	
 }
-
-
-
-
-
-/*
-		if(!menu_button_switch) {
-			ST7735_DrawBitmap(44, 155, menu_buttons[menu_button_index], 40, 40);	
-			menu_button_index++;
-			if(menu_button_index > 19) {
-				menu_button_index = 19;
-				menu_button_switch = 1;
-			}
-		}
-		if(menu_button_switch) {
-			ST7735_DrawBitmap(44, 155, menu_buttons[menu_button_index], 40, 40);	
-			menu_button_index--;
-			if(menu_button_index < 0) {
-				menu_button_index = 0;
-				menu_button_switch = 0;
-			}
-		}
-			for(int i=0; i<300000;i++);
-		*/
-
-
-
-
-	/*
-			for(int i = 159; i > 0; i--) {
-		//ST7735_DrawPixel(10, i+1, ST7735_BLACK); 
-				if(!(GPIO_PORTF_DATA_R & 0x01)) {
-					break;
-				}
-				if(i == 80-28) {
-					break;
-				}
-		ST7735_DrawBitmap(3, i+28, left_arrow_bmp_version2, 28, 26);
-		ST7735_DrawBitmap(35, i+28, up_arrow_bmp_version2, 26, 28);
-		ST7735_DrawBitmap(67, i+28, down_arrow_bmp_version2, 26, 28);
-		ST7735_DrawBitmap(99, i+28, right_arrow_bmp_version2, 28, 26);
-		for(int x = 0; x < 100; x++) {}	// 100000
-	}
-	ST7735_DrawBitmap(3, 80, left_arrow_filler, 28, 26);	// 28
-		ST7735_DrawBitmap(35, 80, up_arrow_filler, 26, 28);
-		ST7735_DrawBitmap(67, 80, down_arrow_filler, 26, 28);
-		ST7735_DrawBitmap(99, 80, right_arrow_filler, 28, 26);
-		*/
-
-	//ST7735_DrawBitmap(0,159, ddrafter_24bitmap, 128, 160);		
-
-
-	/* 
-	while(1) {
-	ST7735_SetCursor(1, 1);	
-	ST7735_OutString((char*)"Press any button to continue");
-	// now fill the screen with background only.
-	// go back to while loop
-}
-	*/
-	
-
-
-
-
-
-
-
-
-
