@@ -62,11 +62,21 @@ extern "C" void EnableInterrupts(void);
 extern "C++" void Delay1ms(uint32_t n);
 extern "C++" void Sound_Init(void);
 extern "C++" void Sound_Play(uint32_t period);
+/*
+The below timers are not required for the game to run. They can be used if the functionality of reading data from the SD card
+to buffers is moved from this main.cpp file to the timers file. 
+*/
 //extern "C++" void Timer3_Init(uint32_t period);
 //extern "C++" void Timer2_Init(uint32_t period);
 //extern "C++" void increase_size();
 //extern "C++" void decrease_size();
 //extern "C++" uint8_t return_size();
+/*
+We need two buffer flags to know if our buffers are filled with values we care about, 1 indicating it is 'ready' and 0 indicating
+it is waiting for the next read from the SD card. We also declare two buffers each of 7000 char values. They are char because
+that is how they are read from the SD card, but we have the SysTick Handler interrupt that parses the char and removes any info
+that is not the data we care about, e.g. commas.
+*/
 extern "C++" unsigned char buffer_flag[1];
 extern "C++" unsigned char buffer2_flag[1];
 extern "C++" unsigned char buffer[7000];
@@ -84,6 +94,10 @@ extern const unsigned short easy_selected[];
 extern const unsigned short medium[];
 extern const unsigned short left_arrow_filler[], right_arrow_filler[], up_arrow_filler[], down_arrow_filler[];
 
+/*
+We declare our arrays that contain the sprite values for the moving arrows as well as the grayed-out filler arrows. 
+We need to pass these to our ST7735 graphical libraries so we can fill the screen.
+*/
 extern const unsigned short up_arrow_0_version3[], up_arrow_1_version3[], up_arrow_2_version3[];
 extern const unsigned short left_arrow_0_version3[], left_arrow_1_version3[], left_arrow_2_version3[];
 extern const unsigned short right_arrow_0_version3[], right_arrow_1_version3[], right_arrow_2_version3[];
@@ -98,6 +112,7 @@ const unsigned short* up_fillers[7] = {up_filler_0, up_filler_1, up_filler_2, up
 const unsigned short* left_fillers[7] = {left_filler_0, left_filler_1, left_filler_2, left_filler_1, left_filler_0, left_filler_3, left_arrow_filler};
 const unsigned short* down_fillers[7] = {down_filler_0, down_filler_1, down_filler_2, down_filler_1, down_filler_0, down_filler_3, down_arrow_filler};
 
+// variables that are used at the end of the program to indicate the score for the player
 uint32_t static perfect;
 uint32_t static great;
 uint32_t static good;
@@ -151,6 +166,11 @@ uint8_t arrow_count_multiplier;
 double static near_val;
 double static minimum;
 uint8_t multiple_value = 11;
+
+/*
+These are our properties for our songs, e.g. number of songs we have stored (so the player can traverse through and pick a song they
+like) and the text file names corresponding to the song they pick. This list is changeable.
+*/
 int16_t song_number;
 uint8_t song_total = 7;
 const char* song_list[] = {"l2y.txt", "otr.txt", "9la.txt", "del.txt", "spd.txt", "wat.txt", "lah.txt"};
@@ -175,6 +195,7 @@ const char inFilename[] = "otr.txt";   // 8 characters or fewer test.txt
 //static uint8_t menu_button_switch;
 
 //FRESULT MountFresult;
+/* variables we need for reading from the SD card */
 static FATFS g_sFatFs;
 FRESULT MountFresult = f_mount(&g_sFatFs, "", 0);
 	
@@ -186,6 +207,7 @@ FRESULT Fresult;
 UINT successfulreads = 1;
 
 int main(void){
+	/* First we need to setup our hardware initializations */
   	PLL_Init(Bus80MHz);       // Bus clock is 80 MHz 
   	Random_Init(1);
 	ST7735_InitR(INITR_REDTAB);
@@ -198,8 +220,10 @@ int main(void){
 	enablebuttons();
 	ST7735_SetTextColor(ST7735_WHITE);
 	
+	/* Here we draw a sprite with our created game background/menu screen. It takes up the entire screen  */
 	ST7735_DrawBitmap(0,159, dance_bmp, 128, 160);	// 128, 160	// ddr_menu_background
 	
+	// Fill the buffers with '0' data (char)
 	for(int i = 0; i < buffer_size; i++) {
 			buffer[i] = 0;
 			buffer2[i] = 0;
@@ -284,6 +308,11 @@ int main(void){
 						arrow_count_multiplier = 0;
 					}
 				}
+				/*
+				We use these int counters to keep track of the speed of the game. The advantage: We don't necessarily
+				want to use an entire timer for just one part of the game. Disadvantage: We don't get to use an interrupt,
+				the timer is still useful. If desired we can use Handler2A or Handler3A timers.
+				*/
 				count_down++;
 				arrow_count++;
 				
@@ -305,6 +334,14 @@ int main(void){
 				}
 
 				if(count_down == 6000) {
+					/*
+					This entire segment of long code is doing the calculations necessary and calling graphical library
+					functions to make sure our audio visualizer bars work properly when the player is picking a song (exciting!)
+					The advantage here is that we are using graphical libraries that only need to update specific pixel indexes on 
+					the screen, which means we don't need to refresh the screen with a new set of pixels everytime which is very costly!
+					We are picking and choosing our indexes to fill in with bars, we fill in different amounts of pixels based on how
+					tall we want the bars to scale. This audio visualizer runs fast so we can still sample music at 44.1 kHz
+					*/
 					color = color + 3;
 					ST7735_DrawFastVLine(34, y_set, height1, 0);
 					ST7735_DrawFastVLine(35, y_set, height1, 0);
@@ -817,6 +854,15 @@ int main(void){
 					ST7735_DrawFastVLine(92, y_set, height8, 0);
 					ST7735_DrawFastVLine(93, y_set, height8, 0);
 					
+					/*
+					This part uses specifically picked values to scale the bars. Our data values
+					coming in from the SD card (the music data) is on range of 0-255. So we can
+					break up the range into chunks, and give each chunk its own visualizer bar.
+					That way, based on the value that we sample, we can scale the bars appropriately,
+					e.g. a value of 55 means that values closer to 255 have shorter bars in height and
+					values closer to 0 have taller bars in height. We don't visualize the audio at every sample
+					because that would be costly to the hardware and is too fast for the player to even see.
+					*/
 					if(final_val < 31.875 && final_val > 1) {
 						near_val = 31.875;
 						minimum = 1;
@@ -1010,7 +1056,15 @@ int main(void){
 					ST7735_DrawFastVLine(93, y_set, height8, color);
 					
 				}
-				
+		
+				/*
+				Now we handle the player's presses on the buttons as they scroll
+				through the list of songs and try to pick a song they like. The 
+				important thing we need to do here is we need to make sure that
+				when they scroll a certain way to pick a song, we need to load the buffers
+				with that new song data. This allows them to hear the song they are currently
+				on in the list, and we want the audio visualizer to work on that new song!
+				*/
 				if(!(GPIO_PORTF_DATA_R & 0x01)) {	// they scrolled left
 					for(int i = 0; i < 100000; i++) {};	// register just one button press
 					if(song_number-1 < 0) {	// reached the end, reset
@@ -1069,6 +1123,14 @@ int main(void){
 				
 				if(flag1 == 1) {
 					ST7735_SetRotation(0);
+					/*
+					This chunk of code here is 'drawing out' the titles of our songs.
+					We want to make sure that they are spaced properly and evenly, 
+					which has been tested and calculated based on our mini LCD screen size
+					and we want to make sure the characters look good too! Based on
+					what song number we are on, we pick that song to draw onto the screen
+					*/
+					
 					if(song_number==0) {	// Lie 2 You
 						ST7735_DrawChar(20,100, 'L', 0x079F, 0, 2);
 						ST7735_DrawChar(20+10,100, 'i', 0x079F, 0, 2);
@@ -1148,14 +1210,19 @@ int main(void){
 						ST7735_DrawChar(5+98,100, 'A', 0x079F, 0, 2);
 					}
 					
-					// add more songs here
+					// add more songs here! 
 					flag1 = 0;
 					ST7735_SetRotation(2);
 				}
 				
 				if(start_flag) {
+					/*
+					When calculating what values to put inside the timers based on the 80 Mhz
+					locked frequency of the microcontroller, make sure to think of the
+					Nyquist Sampling theorem!
+					*/ 
 					//Timer3_Init(806248);	// 888889, should be 806248
-					//Timer2_Init(7256235);	// half of Sound_Play		WAS 7256235
+					//Timer2_Init(7256235);	// half of Sound_Play		
 					//Timer2_Init(806248);
 					//Sound_Play(1814);	// 1814
 					count_down = 1;
@@ -1172,9 +1239,15 @@ int main(void){
 			buffer[i] = 0;
 			buffer2[i] = 0;
 		}
+	/* 
+	They've picked a song! But now we need to reset our file pointer so they can play the game
+	with the song starting from the beginning, not starting from where they left off in the menu of
+	sample songs!
+	*/
 	Fresult = f_close(&Handle);
 	ST7735_FillScreen(0x0000);	// set screen to black
 
+	/* open the song again */
 	Fresult = f_open(&Handle, song_list[song_number], FA_READ);	// inFilename
 	Fresult = f_read(&Handle, &cc, 1, &successfulreads);
 
@@ -1186,6 +1259,10 @@ int main(void){
 	
 	static uint8_t count;
 	num_arrows = 0;
+	/* 
+	We want our arrow sprites to be starting off the screen and coming from out the screen into 
+	the game playground. 
+	*/
 	for(int i = 0; i < 4; i++) {
 		left_arrows[i] = -200;
 		up_arrows[i] = -200;
@@ -1193,6 +1270,7 @@ int main(void){
 		right_arrows[i] = -200;
 	}
 	
+	/* Here we are making sure to take into account the height of each arrow as they move along */
 	closest_distance = 159+28;
 	farthest_flag = 1;
 	smallest = 159+28;
@@ -1201,6 +1279,11 @@ int main(void){
 	yes_pointer = 0;
 	total_arrows = 0;
 	
+	/*
+	We draw the gray arrow fillers corresponding to their height (not all arrow fillers
+	are made the same way! - some are slightly taller and some are slightly wider, e.g.
+	the difference between a right facing arrow and an up facing arrow
+	*/
 	ST7735_DrawBitmap(4, 25, left_arrow_filler, 28, 26);	// 4, 28			
 	ST7735_DrawBitmap(36, 27, up_arrow_filler, 26, 28);	// 36, 28			
 	ST7735_DrawBitmap(66, 27, down_arrow_filler, 26, 28);	// 66, 28			
