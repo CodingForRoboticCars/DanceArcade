@@ -1,9 +1,8 @@
 // Sound.cpp
-// Runs on any computer
-// Sound assets based off the original Space Invaders 
-// Import these constants into your SpaceInvaders.c for sounds!
-// Jonathan Valvano
-// April 19, 2018
+// Written by Viraj Wadhwa
+// Thank you to Jonathan Valvano for teaching me during Intro to Embedded Systems, the knowledge I gained
+// helped me create this file!
+
 #include <stdint.h>
 #include "../inc/tm4c123gh6pm.h"
 #include "DAC.h" 
@@ -63,47 +62,20 @@ extern FRESULT Fresult;
 #define MAXBLOCKS 100
 #define FILETESTSIZE 10000
 extern UINT successfulreads;
-/*
-unsigned char x,y,z;
-uint8_t static x_flag;
-uint8_t static y_flag;
-uint8_t static z_flag;
-uint8_t static new_line_flag;
-uint8_t static comma_flag;
-uint8_t static end_flag;
-*/
 
+
+/*
+SysTick_Handler is the interrupt we call to parse through data we read from the SD card (which is stored in buffers). I have created this function to properly parse through
+the data values that we need to sample music at 44.1 kHz, which means the sysTick Handler is called often during our program execution. This function is fast enough
+to properly parse through the values and allow functions that call the graphical libraries to execute as well, without any stutters on the screen. This function should not be
+changed, because otherwise you are affecting the way data is parsed from the buffers.
+*/
 void SysTick_Handler(void) {
 	
 			x_flag = 0;
 			y_flag = 0;
 			z_flag = 0;
 			comma_flag = 0;
-			/*
-			if(start_flag) {
-				if(MountFresult){
-					while(1){};
-				}
-				const char menu_music[] = "l2y.txt";   // 8 characters or fewer test.txt
-				Fresult = f_open(&Handle, menu_music, FA_READ);	// inFilename
-				Fresult = f_read(&Handle, &cc, 1, &successfulreads);
-
-				while(cc != '{') {
-					Fresult = f_read(&Handle, &cc, 1, &successfulreads);
-				}
-				start_flag = 0;
-				value = 511;
-			}
-	
-			if(buffer_flag[0] == 1) {
-						Fresult = f_read(&Handle, &buffer, 512, &successfulreads);
-						buffer_flag[0] = 0;
-				}
-				else if(buffer2_flag[0] == 1) {
-						Fresult = f_read(&Handle, &buffer2, 512, &successfulreads);
-						buffer2_flag[0] = 0;
-				}
-				*/
 	
 			while(change_flag && c != ',') {
 				index++;
@@ -111,7 +83,7 @@ void SysTick_Handler(void) {
 			}
 			
 			change_flag = 0;
-			c = buff_pointer[index];			// c = buffer[index]
+			c = buff_pointer[index];			
 			if(c==',') {
 				if(index >= value) {
 					index = 0;
@@ -128,46 +100,12 @@ void SysTick_Handler(void) {
 						which_buffer = 0;
 						buff_pointer = buffer_set[which_buffer];
 					}
-					//c = buffer[index];
 				}
 				else {
 					index++;
 					c = buff_pointer[index];
 				}
 			}
-			
-			/*
-			if(c=='\n') {
-				if(index >= value-1) {
-					index = 0;
-					change_flag = 1;
-					if(buffer_flag[0] == 0) {
-						buffer_flag[0] = 1;
-						buffer2_flag[0] = 0;
-						which_buffer = 1;
-					}
-					else {
-						buffer_flag[0] = 0;
-						buffer2_flag[0] = 1;
-						which_buffer = 0;
-					}
-					//c = buffer[index];
-				}
-				else {
-					index++;
-					index++;
-					c = buffer[index];
-				}
-				// c could be a comma or digit (assume never newline->brace)
-				if(c==',') {
-					comma_flag = 1;
-				}
-				else {
-					x = (c-'0');
-					x_flag = 1;
-				}
-			} */ //if(c=='\n') {}
-			
 			
 			if(c==',') {
 				comma_flag = 1;
@@ -200,7 +138,7 @@ void SysTick_Handler(void) {
 						which_buffer = 0;
 						buff_pointer = buffer_set[which_buffer];
 					}
-					//c = buffer[index];
+					
 					}
 					else if(!change_flag) {
 						index++;
@@ -209,37 +147,6 @@ void SysTick_Handler(void) {
 					if(c==',') {
 						comma_flag = 1;
 					}
-					/*
-					else if(c=='\n') {
-						if(index >= value-1) {
-							index = 0;
-							change_flag = 1;
-							if(buffer_flag[0] == 0) {
-								buffer_flag[0] = 1;
-								buffer2_flag[0] = 0;
-								which_buffer = 1;
-							}
-							else {
-								buffer_flag[0] = 0;
-								buffer2_flag[0] = 1;
-								which_buffer = 0;
-							}
-							//c = buffer[index];
-						}
-						else {
-							index++;
-							index++;
-							c = buffer[index];
-						}
-						// c could be a comma or digit (assume never newline->brace)
-						if(c==',') {
-							comma_flag = 1;
-						}
-						else {
-							y = (c-'0');
-							y_flag = 1;
-						}	
-					} */ //else if(x==1) {}
 					
 					else if(c=='}') {
 						end_flag = 1;
@@ -271,7 +178,7 @@ void SysTick_Handler(void) {
 							which_buffer = 0;
 							buff_pointer = buffer_set[which_buffer];
 						}
-						//c = buffer[index];
+						
 						}
 						else if(!change_flag) {
 							index++;
@@ -279,33 +186,8 @@ void SysTick_Handler(void) {
 						}
 					if(c==',') {
 						comma_flag = 1;
-					}/*
-					else if(c=='\n') {
-						if(index >= value-1) {
-							index = 0;
-							change_flag = 1;
-							if(buffer_flag[0] == 0) {
-								buffer_flag[0] = 1;
-								buffer2_flag[0] = 0;
-								which_buffer = 1;
-							}
-							else {
-								buffer_flag[0] = 0;
-								buffer2_flag[0] = 1;
-								which_buffer = 0;
-							}
-							//c = buffer[index];
-						}
-						else {
-							index++;
-							index++;
-							c = buffer[index];
-						}
-						if(c != ',') {
-							z = (c-'0');
-							z_flag = 1;
-						}
-					} */
+					}
+					
 					else if(c=='}') {
 						end_flag = 1;
 					}
@@ -315,14 +197,6 @@ void SysTick_Handler(void) {
 					}
 				}			
 			}
-			
-		
-			/*
-		if(end_flag) {
-			index = 0;
-			// end
-		}
-			*/
 		
 		if(!end_flag && x_flag) {
 			if(y_flag) {
@@ -338,11 +212,6 @@ void SysTick_Handler(void) {
 				final_val = x;
 			}
 		}
-		/*
-		if(change_flag) {
-				//DAC_Out(last_val);
-			}
-		*/
 		
 		if(index >= value) {
 					index = 0;
